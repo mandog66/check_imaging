@@ -52,15 +52,15 @@ name = 1    # 圖片檔名
 del_count = 0   # 重複圖片的數量
 
 # 重複的圖片要不要顯示
-show_del_img = input("是否顯示被刪除的圖片(y/n) : ")
-if show_del_img != "y" and show_del_img != "n":
-    while (1):
-        show_del_img = input("是否顯示被刪除的圖片(y/n) : ")
-        if show_del_img == "y" or show_del_img == "n":
-            break
-        else:
-            print("再輸入一次(y/n) : ")
-            continue
+# show_del_img = input("是否顯示被刪除的圖片(y/n) : ")
+# if show_del_img != "y" and show_del_img != "n":
+#     while (1):
+#         show_del_img = input("是否顯示被刪除的圖片(y/n) : ")
+#         if show_del_img == "y" or show_del_img == "n":
+#             break
+#         else:
+#             print("再輸入一次(y/n) : ")
+#             continue
 
 # 檢查有沒有重複的圖片
 # img 是要檢查的圖片
@@ -72,15 +72,23 @@ for img in img_temp:
             result = not np.any(different)
             if result == True:
                 check_img.check = True
-                if show_del_img == "y":
-                    del_img = cv2.imread(check_img.img_name)
-                    cv2.imwrite("./del_images/del_img_{}.{}".format(
-                        del_count + 1, check_img.img_format))
-                elif show_del_img == "n":
-                    pass
+                del_img = cv2.imread(check_img.img_name)
+                cv2.imwrite("./del_images/del_img_{}.{}".format(
+                    del_count + 1, check_img.img_format))
+
+                # 刪除圖片備份到 del_images
+                # if show_del_img == "y":
+                #     del_img = cv2.imread(check_img.img_name)
+                #     cv2.imwrite("./del_images/del_img_{}.{}".format(
+                #         del_count + 1, check_img.img_format))
+                # elif show_del_img == "n":
+                #     pass
+
+                # 刪除圖片
                 os.remove(check_img.img_name)
                 del_count += 1
 
+    # 更改圖片名字
     if img.check == False:
         if img.img_name.endswith(".png") or img.img_name.endswith(".PNG"):
             os.rename(img.img_name, img_name + str(name) + ".png")
