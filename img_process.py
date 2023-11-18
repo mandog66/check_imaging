@@ -70,13 +70,30 @@ def img_to_array():
     img = cv2.imread("check_img_763.png", cv2.IMREAD_GRAYSCALE)
     img = cv2.resize(img, (24, 24))
     img = img.reshape(24, 24)
-    print(img)
+    # print(img)
+    print(type(img))
 
     img = cv2.imread("check_img_763.png", cv2.IMREAD_GRAYSCALE)
     img = cv2.resize(img, (24, 24))
     img = image.img_to_array(img)
     img = img.reshape(24, 24)
-    print(img)
+    # print(img)
+
+
+def write_file(d):
+    with open("img_name.txt", 'w') as d_name:
+        name = d_name.write(str(d))
+
+
+def name_file():
+    if not os.path.exists("img_name.txt"):
+        with open("img_name.txt", 'w+') as f:
+            name = 1
+            print(name)
+    else:
+        with open("img_name.txt", 'r') as f:
+            name = int(f.read())
+            print(name)
 
 
 if __name__ == "__main__":
@@ -88,3 +105,5 @@ if __name__ == "__main__":
     # copy_img(2)
     # print_same()
     img_to_array()
+    # name_file()
+    # write_file(5)

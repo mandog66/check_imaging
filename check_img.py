@@ -3,6 +3,7 @@ import os
 import numpy as np
 
 root_dir = os.getcwd()
+# 被刪除圖片的備份
 try:
     os.makedirs("del_images")
     print("del_images folder be created")
@@ -10,12 +11,28 @@ except OSError:
     print("del_images folder already exist")
 
 
-def img_process(picture):
+def img_process(picture: str) -> np.ndarray:
     # 圖片前置處理
     img = cv2.imread(picture, cv2.IMREAD_GRAYSCALE)
     img = cv2.resize(img, (24, 24))
     img = img.reshape(24, 24)
     return img
+
+
+def write_file(d: int):
+    with open("img_name.txt", 'w') as f:
+        f.write(str(d))
+
+
+def read_file() -> int:
+    if not os.path.exists("img_name.txt"):
+        with open("img_name.txt", 'w+') as f:
+            name = 1
+            return name
+    else:
+        with open("img_name.txt", 'r') as f:
+            name = int(f.read())
+            return name
 
 
 class P():
@@ -43,7 +60,7 @@ for pictures in os.listdir(root_dir):
 print(f"\n圖片總數 : {len(img_temp)}\n開始檢查!!")
 
 index = 1   # 切割圖片物件陣列
-name = 1    # 圖片檔名
+name = read_file()    # 圖片檔名
 del_count = 0   # 重複圖片的數量
 
 # 檢查有沒有重複的圖片
@@ -71,5 +88,8 @@ for img in img_temp:
         name += 1
     index += 1
     img.check = True
+
+# 檔案尾數的紀錄
+write_file(name)
 
 print(f"\n檢查完成!!\n檢查的張數 : {len(img_temp)}\n重複的張數 : {del_count}")
