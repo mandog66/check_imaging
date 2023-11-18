@@ -1,12 +1,8 @@
 import cv2
 import os
 import numpy as np
-import keras.utils as image
 
 root_dir = os.getcwd()
-img_temp = []   # 圖片物件陣列
-count = 1   # 圖片張數
-file_extension = ["jpg", "JPG", "jpeg", "jfif", "png", "PNG"]   # 副檔名
 try:
     os.makedirs("del_images")
     print("del_images folder be created")
@@ -18,7 +14,6 @@ def img_process(picture):
     # 圖片前置處理
     img = cv2.imread(picture, cv2.IMREAD_GRAYSCALE)
     img = cv2.resize(img, (24, 24))
-    img = image.img_to_array(img)
     img = img.reshape(24, 24)
     return img
 
@@ -32,19 +27,20 @@ class P():
         self.img_format = img_format
 
 
-img_name = input("輸入圖片名稱 : ")
-
+img_temp = []   # 圖片物件陣列
+count = 1   # 圖片張數
+file_extension = ["jpg", "JPG", "jpeg", "jfif", "png", "PNG"]   # 副檔名
 # 圖片前處理後放到圖片物件陣列
 for pictures in os.listdir(root_dir):
     if os.path.isfile(os.path.join(root_dir, pictures)):
         if pictures.split(".")[1] in file_extension:
-            print(f"\r前處理第 {count} 張圖片中", end='', flush=True)
+            print(f"前處理第 {count} 張圖片中", end='\r', flush=True)
             img_array = img_process(pictures)
             img_format = pictures.split(".")[1]
             img_temp.append(P(False, img_array, pictures, img_format))
             count += 1
 
-print("\n圖片總數 : ", len(img_temp))
+print(f"\n圖片總數 : {len(img_temp)}\n開始檢查!!")
 
 index = 1   # 切割圖片物件陣列
 name = 1    # 圖片檔名
@@ -61,8 +57,8 @@ for img in img_temp:
             if result == True:
                 check_img.check = True
                 del_img = cv2.imread(check_img.img_name)
-                cv2.imwrite("./del_images/del_img_{}.{}".format(
-                    del_count + 1, check_img.img_format))
+                cv2.imwrite(
+                    f"./del_images/del_img_{del_count + 1}.{check_img.img_format}")
 
                 # 刪除圖片
                 os.remove(check_img.img_name)
@@ -70,10 +66,10 @@ for img in img_temp:
 
     # 更改圖片名字
     if img.check == False:
-        os.rename(img.img_name, "LO_{}.{}".format(name, img.img_format))
-        print(f"\r檢查第 {name} 張", end='', flush=True)
+        os.rename(img.img_name, f"LO_{name}.{img.img_format}")
+        print(f"檢查第 {name} 張", end='\r', flush=True)
         name += 1
     index += 1
     img.check = True
 
-print("\n重複的張數 : ", del_count)
+print(f"\n檢查完成!!\n檢查的張數 : {len(img_temp)}\n重複的張數 : {del_count}")

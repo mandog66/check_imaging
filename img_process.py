@@ -1,6 +1,7 @@
 import cv2
 import os
 import keras.utils as image
+import time
 
 root_dir = os.getcwd()
 fileExtension = ["jpg", "JPG", "jpeg", "jfif", "png", "PNG"]
@@ -58,10 +59,32 @@ def copy_img(i):
     cv2.imwrite("./del_images/del_image_{}.png".format(i), img)
 
 
+def print_same():
+    for i in range(3, 0, -1):
+        print(i, flush=False)
+        time.sleep(1)
+    print("GO")
+
+
+def img_to_array():
+    img = cv2.imread("check_img_763.png", cv2.IMREAD_GRAYSCALE)
+    img = cv2.resize(img, (24, 24))
+    img = img.reshape(24, 24)
+    print(img)
+
+    img = cv2.imread("check_img_763.png", cv2.IMREAD_GRAYSCALE)
+    img = cv2.resize(img, (24, 24))
+    img = image.img_to_array(img)
+    img = img.reshape(24, 24)
+    print(img)
+
+
 if __name__ == "__main__":
     # img = img_process("check_img_763.png")
     # file_extension()
     # open_img()
     # del_dir()
-    copy_img(1)
-    copy_img(2)
+    # copy_img(1)
+    # copy_img(2)
+    # print_same()
+    img_to_array()
