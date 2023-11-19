@@ -2,6 +2,8 @@ import cv2
 import os
 import keras.utils as image
 import time
+import subprocess
+import re
 
 root_dir = os.getcwd()
 fileExtension = ["jpg", "JPG", "jpeg", "jfif", "png", "PNG"]
@@ -21,6 +23,7 @@ def file_extension():
         if os.path.isfile(os.path.join(root_dir, pictures)):
             print(pictures, end="\t")
             if pictures.split(".")[1] in fileExtension:
+                cv2.imread(pictures)
                 print("True")
             else:
                 print("False")
@@ -55,8 +58,8 @@ def del_dir():
 
 
 def copy_img(i):
-    img = cv2.imread("check_img_763.png")
-    cv2.imwrite("./del_images/del_image_{}.png".format(i), img)
+    img = cv2.imread("FjG5XUJaYAEruHs (2).jfif")
+    cv2.imwrite("./del_images/del_image_{}.jfif".format(i), img)
 
 
 def print_same():
@@ -80,20 +83,42 @@ def img_to_array():
     # print(img)
 
 
-def write_file(d):
+def write_file(n, d):
     with open("img_name.txt", 'w') as d_name:
-        name = d_name.write(str(d))
+        d_name.write(str(n)+"\n"+str(d))
 
 
 def name_file():
     if not os.path.exists("img_name.txt"):
-        with open("img_name.txt", 'w+') as f:
+        with open("img_name.txt", 'w') as f:
             name = 1
-            print(name)
+            del_c = 0
+            print(name, del_c)
     else:
         with open("img_name.txt", 'r') as f:
-            name = int(f.read())
+            name = f.readline()
             print(name)
+            d = f.readline()
+            print(d)
+
+
+def shell_command():
+    subprocess.run(['magick', 'mogrify', '1.png'], shell=True)
+    time.sleep(1)
+
+
+def regular():
+    temp = ["LO_1.png", "LO_2.jpg", "A.jpg", "B.png"]
+    exist_img = []
+    check_img = []
+    m = re.compile('LO_\d+.\w+')
+    for img in temp:
+        if m.match(img) != None:
+            exist_img.append(img)
+        else:
+            check_img.append(img)
+    print(exist_img)
+    print(check_img)
 
 
 if __name__ == "__main__":
@@ -104,6 +129,15 @@ if __name__ == "__main__":
     # copy_img(1)
     # copy_img(2)
     # print_same()
-    img_to_array()
+    # img_to_array()
     # name_file()
-    # write_file(5)
+    # write_file(5, 1)
+    # cv2.imread("1.png")
+    # file_name, file_extend = os.path.splitext("2.jfif")
+    # print(file_name)
+    # print(file_extend)
+    # regular()
+    a = []
+    for i in a:
+        print("True")
+    print("False")
