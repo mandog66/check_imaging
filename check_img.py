@@ -1,11 +1,14 @@
+import shutil
 import cv2
 import os
 import numpy as np
 import subprocess
 import re
+from typing import Tuple
 
 root_dir = os.getcwd()
-# 被刪除圖片的備份
+
+# 被刪除圖片的備份資料夾
 try:
     os.makedirs("del_images")
     print("del_images 資料夾已創建完成")
@@ -13,17 +16,8 @@ except OSError:
     print("del_images 資料夾已存在")
 
 
-def img_process(picture: str) -> str | np.ndarray:
+def img_process(picture: str) -> Tuple[str, np.ndarray]:
     # 圖片前置處理
-    not_img_format = [".jfif"]  # 圖片無法寫入的副檔名
-    img_name, img_format = os.path.splitext(picture)
-    if img_format in not_img_format:
-        subprocess.run(['magick', 'mogrify', '-format',
-                       'jpg',  picture], shell=True)
-        os.remove(picture)
-        picture = f"{img_name}.jpg"
-    else:
-        subprocess.run(['magick', 'mogrify', picture], shell=True)
     img = cv2.imread(picture, cv2.IMREAD_GRAYSCALE)
     img = cv2.resize(img, (24, 24))
     img = img.reshape(24, 24)
@@ -35,7 +29,7 @@ def write_file(n: int, d: int):
         f.write(str(n)+'\n'+str(d))
 
 
-def read_file() -> int | int:
+def read_file() -> Tuple[int, int]:
     if not os.path.exists("img_name.txt"):
         with open("img_name.txt", 'w') as f:
             n = 1
@@ -57,14 +51,12 @@ class P():
         self.img_format = img_format
 
 
-img_temp = []   # 圖片物件陣列
-
 exist_img = []  # 已經存在的圖片(已檢查)
 uncheck_img = []  # 新增的圖片(未檢查)
 
 count = 1   # 圖片張數
 file_extension = ["jpg", "JPG", "jpeg", "jfif", "png", "PNG"]   # 副檔名
-m = re.compile('LO_\d+.\w+')  # 找出符合的檔名
+m = re.compile('LO_\d+.\w+')    # 檢查固定檔名
 
 # 圖片前處理後放到圖片物件陣列
 for pictures in os.listdir(root_dir):
@@ -81,48 +73,45 @@ for pictures in os.listdir(root_dir):
 
             count += 1
 
-for i in exist_img:
-    print("exist images : ", i.img_name)
-for i in uncheck_img:
-    print("uncheck images : ", i.img_name)
-
 print(f"\n圖片總數 : {len(exist_img)+len(uncheck_img)}\n已檢查的圖片 : {len(exist_img)}\n未檢查的圖片 : {len(uncheck_img)}\n開始檢查!!")
 
-index = 1   # 切割圖片物件陣列
-cname, cdel_count = read_file()    # 圖片檔名, 重複圖片的數量
-name, del_count = 1, cdel_count
+cname, cdel_count = read_file()    # 記錄中的圖片尾數, 重複圖片尾數
+name, del_count = 1, cdel_count  # 顯示在控制台
 
 # 檢查有沒有重複的圖片
-# img 是要檢查的圖片
-# check_img 是要比對的圖片
-for img in img_temp:
-    for check_img in img_temp[index:]:
-        if check_img.check == False:
-            different = cv2.subtract(img.img_array, check_img.img_array)
-            result = not np.any(different)
-            if result == True:
-                check_img.check = True
-                print(check_img.img_name)
-                del_img = cv2.imread(check_img.img_name)
-                cv2.imwrite(
-                    f"./del_images/del_img_{del_count + 1}.{check_img.img_format}", del_img)
+# un_img 是要檢查的圖片(新增的)
+# ex_img 是要比對的圖片(檢查過的)
+for un_img in uncheck_img:
+    for ex_img in exist_img:
+        different = cv2.subtract(un_img.img_array, ex_img.img_array)
+        result = not np.any(different)
 
-                # 刪除圖片
-                os.remove(check_img.img_name)
-                del_count += 1
+        # 找到一樣的圖片
+        if result:
+            un_img.check = True
+            del_img = cv2.imread(un_img.img_name)
+
+            # 備份重複的圖片
+            shutil.copyfile(
+                un_img.img_name, f"./del_images/del_img_{del_count + 1}.{un_img.img_format}")
+
+            # 刪除圖片
+            os.remove(un_img.img_name)
+            del_count += 1
+            break
 
     # 更改圖片名字
-    if img.check == False:
-        os.rename(img.img_name, f"LO_{cname}.{img.img_format}")
+    if un_img.check == False:
+        rename = f"LO_{cname}.{un_img.img_format}"
+        os.rename(un_img.img_name, rename)
+        exist_img.append(P(True, un_img.img_array, rename, un_img.img_format))
         print(f"檢查第 {name} 張", end='\r', flush=True)
         cname += 1
         name += 1
-    index += 1
-    img.check = True
 
 # 檔案尾數的紀錄
-write_file(name, del_count)
+write_file(cname, del_count)
 
-del_count = del_count-cdel_count
+del_count = del_count - cdel_count
 print(
-    f"\n檢查完成!!\n檢查的張數 : {len(img_temp)}\n重複的張數 : {del_count if del_count > 0 else 0}")
+    f"\n檢查完成!!\n新圖片的張數 : {name - 1}\n重複的張數 : {del_count if del_count > 0 else 0}")
