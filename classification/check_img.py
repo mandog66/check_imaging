@@ -4,6 +4,7 @@ import os
 import numpy as np
 import re
 from typing import Tuple
+import time
 
 root_dir = os.getcwd()
 
@@ -17,8 +18,16 @@ except OSError:
 
 def img_process(picture: str) -> Tuple[str, np.ndarray]:
     # 圖片前置處理
-    img_size = 300
+    img_size = 1000
     img = cv2.imread(picture, cv2.IMREAD_GRAYSCALE)
+
+    # 檔名有中文
+    if img is None:
+        tmp = time.strftime("%Y%m%d%H%M%S") + "." + picture.split(".").pop()
+        os.rename(picture, tmp)
+        picture = tmp
+        img = cv2.imread(tmp, cv2.IMREAD_GRAYSCALE)
+
     img = cv2.resize(img, (img_size, img_size))
     img = img.reshape(img_size, img_size)
     return picture, img
@@ -59,6 +68,9 @@ class P():
         self.img_format = img_format
 
 
+# 圖片前處理計時
+s_time = time.process_time()
+
 img_dict = {"jpg": {"exist_img": [], "uncheck_img": []}, "jfif": {
     "exist_img": [], "uncheck_img": []}, "png": {"exist_img": [], "uncheck_img": []}}   # 圖片物件陣列
 
@@ -69,10 +81,10 @@ m = re.compile('LO_\d+.\w+')    # 檢查固定檔名
 # 圖片前處理後放到圖片物件陣列
 for pictures in os.listdir(root_dir):
     if os.path.isfile(os.path.join(root_dir, pictures)):
-        if pictures.split(".")[1] in file_extension:
+        if pictures.split(".").pop() in file_extension:
             print(f"前處理第 {count} 張圖片中", end='\r', flush=True)
             pictures, img_array = img_process(pictures)
-            img_format = pictures.split(".")[1]
+            img_format = pictures.split(".").pop()
 
             # 依照圖片副檔名分類
             if img_format in ["jpg", "JPG", "jpeg"]:
@@ -99,6 +111,12 @@ print(f"\n\n圖片總數 : {count - 1}\n\
       \n已檢查的 jfif 圖片 : {len(img_dict['jfif']['exist_img'])}\n未檢查的 jfif 圖片 : {len(img_dict['jfif']['uncheck_img'])}\n\
       \n已檢查的 png 圖片 : {len(img_dict['png']['exist_img'])}\n未檢查的 png 圖片 : {len(img_dict['png']['uncheck_img'])}\n\
       \n開始檢查!!\n")
+
+e_time = time.process_time()
+print(f"\n圖片前處理花費 {e_time - s_time} 秒\n")
+
+# 圖片檢查計時
+s_time = time.process_time()
 
 cname, cjpg_d, cjfif_d, cpng_d = read_file()    # 記錄中的尾數
 name, jpg_d, jfif_d, png_d = 1, cjpg_d, cjfif_d, cpng_d  # 顯示在控制台
@@ -157,3 +175,6 @@ print(f"\n檢查完成!!\
       \n新的 jpg 圖片 : {len(img_dict['jpg']['uncheck_img']) - jpg_d_c}\n重複的 jpg 圖片 : {jpg_d_c}\n\
       \n新的 jfif 圖片 : {len(img_dict['jfif']['uncheck_img']) - jfif_d_c}\n重複的 jfif 圖片 : {jfif_d_c}\n\
       \n新的 png 圖片 : {len(img_dict['png']['uncheck_img']) - png_d_c}\n重複的 png 圖片 : {png_d_c}")
+
+e_time = time.process_time()
+print(f"\n圖片檢查花費 {e_time - s_time} 秒")
